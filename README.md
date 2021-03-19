@@ -7,3 +7,6 @@ type. Important note, the TYPE of an action is determined by its source (spell, 
 
 When an attempt action is performed from the actions tab, if that attempt has an associated cost to be paid, then the cost of any mastered type is reduced by half.
 A type is mastered when all four of the checkboxes on the Main tab are filled in. In chat, this is denoted when a cost is paid by adding the text "[MASTERED]" to the output.
+
+## Compatibility
+This extension is compatible with all other ICRPG extensions.
