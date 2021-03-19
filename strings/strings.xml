@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root>
+  <string name="char_label_mastery">Mastery</string>
+  <string name="char_label_type">Type</string>
+  <string name="char_label_levels">Mastery</string>
+  <string name="MASTERY">MASTERY</string>
+  <string name="Mastery">Mastery</string>
+  <string name="MASTERED">MASTERED</string>
+  <string name="Mastered">Mastered</string>
+</root>

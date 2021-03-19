@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<root version="3.3" release="1.0">
+	<announcement text="Loaded Mastery extnesion" font="emotefont" />
+	<properties>
+		<name>ICRPG - Mastery</name>
+		<version>1.0</version>
+		<author>George Taray</author>
+		<description>Adds the ability to specify Mastery for Types of spells, per the MAGIC book.</description>
+		<ruleset>
+			<name>ICRPG</name>
+		</ruleset>
+		<loadorder>30</loadorder>
+	</properties>
+	<base>
+		<!-- These are all the files that get used by the extension -->
+		<!-- Campaign -->		
+		<includefile source="campaign/record_char_main.xml" />
+		<includefile source="campaign/record_power.xml" />
+		<includefile source="campaign/template_mastery.xml" />
+
+		<!-- Strings -->
+		<includefile source="strings/strings.xml" />
+
+		<!-- Scripts -->
+		<script name="Mastery" file="scripts/ICRPGMastery.lua" />
+	</base>
+</root>

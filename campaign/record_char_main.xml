@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root>
+    <windowclass name="charsheet_main" merge="join">
+        <sheetdata>
+			<frame_char name="masteryframe">
+				<anchored>
+					<top parent="statsframe" anchor="bottom" offset ="0"/>
+					<left offset="20" />
+					<right offset="-20"/>
+					<bottom />
+				</anchored>
+			</frame_char>
+			<anchor_column name="columnanchor">
+				<anchored to="masteryframe" offset="0,-10" />
+			</anchor_column>
+
+			<!-- Column headers -->
+			<genericcontrol name="rightanchor">
+				<anchored to="columnanchor" width="0" height="0">
+					<top offset="10" />
+					<right offset="-20" />
+				</anchored>
+				<invisible />
+			</genericcontrol>
+			<label name="mastery_header">
+				<anchored to="masteryframe" position="insidetopleft" offset="5,10" width="100" />
+				<center />
+				<static textres="char_label_levels" />
+			</label>
+			<label name="type_label">
+				<anchored to="masteryframe" position="insidetopleft" offset="20,10">
+					<left offset="80" />
+					<right/>
+				</anchored>
+				<center />
+				<static textres="char_label_type" />
+			</label>
+
+			<list_mastery name="masteries">
+				<anchored>
+					<top parent="columnanchor" anchor="bottom" relation="relative" offset="42" />
+				</anchored>
+			</list_mastery>
+			<scrollbar_list>
+				<anchored to="masteries" offset="-8" />
+				<target>masteries</target>
+			</scrollbar_list>
+			<button_iedit name="masteries_iedit">
+				<anchored to="masteryframe" position="aboveright" offset="10,-30" />
+				<target>masteries</target>
+			</button_iedit>
+			<button_iadd name="masteries_iadd">
+				<anchored to="masteries_iedit" position="lefthigh" offset="5,0" />
+				<target>masteries</target>
+			</button_iadd>
+        </sheetdata>
+    </windowclass>
+
+	<windowclass name="mastery_section">
+		<sheetdata>
+			
+		</sheetdata>
+	</windowclass>
+
+	<windowclass name="mastery_item">
+		<margins control="0,0,0,2" />
+		<script file="campaign/scripts/mastery_item.lua" />
+		<sheetdata>
+			<genericcontrol name="rightanchor">
+				<anchored height="0" width="0">
+					<top />
+					<left />
+				</anchored>
+			</genericcontrol>
+			
+			<button_checkbox name="mastery1">
+				<anchored to="rightanchor" height="20" width="20">
+					<top/>
+					<left anchor="right" relation="relative" offset="0" />
+				</anchored>
+			</button_checkbox>
+			<button_checkbox name="mastery2">
+				<anchored to="rightanchor" height="20" width="20">
+					<top/>
+					<left anchor="right" relation="relative" offset="0" />
+				</anchored>
+			</button_checkbox>
+			<button_checkbox name="mastery3">
+				<anchored to="rightanchor" height="20" width="20">
+					<top/>
+					<left anchor="right" relation="relative" offset="0" />
+				</anchored>
+			</button_checkbox>
+			<button_checkbox name="mastery4">
+				<anchored to="rightanchor" height="20" width="20">
+					<top/>
+					<left anchor="right" relation="relative" offset="0" />
+				</anchored>
+			</button_checkbox>
+			<button_idelete name="idelete">
+				<anchored to="rightanchor">
+					<top />
+					<right parent="" anchor="right" offset="0" />
+				</anchored>
+			</button_idelete>
+			<string_textlistitem name="masterytype">
+				<anchored to="rightanchor">
+					<top />
+					<right parent="idelete" anchor="left" offset="-5" />
+					<left anchor="right" relation="relative" offset="5" />
+				</anchored>
+			</string_textlistitem>
+		</sheetdata>
+	</windowclass>
+</root>

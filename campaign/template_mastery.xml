@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<!-- 
+  Please see the license.html file included with this distribution for 
+  attribution and copyright information.
+-->
+
+<root>
+    <template name="list_mastery">
+        <windowlist>
+			<script file="campaign/scripts/mastery_list.lua"/>
+            <anchored>
+                <top parent="columnanchor" anchor="bottom" relation="relative" offset="30" />
+                <left offset="30"/>
+                <right offset="-30"/>
+				<bottom offset="-20"/>
+            </anchored>
+            <allowcreate />
+            <allowdelete />
+            <!-- <columns width="222" filldown="true" /> -->
+            <datasource>.masteries</datasource>
+            <class>mastery_item</class>
+            <footer>footer_wide</footer>
+        </windowlist>
+    </template>
+</root>
