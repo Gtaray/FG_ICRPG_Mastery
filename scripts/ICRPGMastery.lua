@@ -15,7 +15,8 @@ function onInit()
 
     fGetPowerRoll = ActionAttempt.getPowerRoll;
     ActionAttempt.getPowerRoll = getAttemptPowerRoll;
-    ActionAttempt.deductCost = deductCostWithMastery;
+
+    ActionAttempt.setCustomDeductCost(handleCostMastery)
 end
 
 function getPCPowerActionWithMastery(nodeAction)
@@ -37,52 +38,36 @@ function getAttemptPowerRoll(rActor, rAction)
     -- Replace '[COST: #]' with updated version that includes mastery type
     if rAction.sCostTrigger ~= "" then
         if rAction.sMasteryType then
-            local fullmatch = rRoll.sDesc:match("(%[COST: .+%])")
-            if fullmatch then
-                local copy = fullmatch:match("%[COST: .+ %((.+)%)%]");
-                if copy then
-                    local newCost = rAction.sMasteryType .. ", " .. copy;
-                    fullmatch = fullmatch:gsub("%(.+%)", "(" .. newCost .. ")");
-                    rRoll.sDesc = rRoll.sDesc:gsub("%[COST: .+%]", fullmatch); 
-                end
+            local costPrefix = rRoll.sDesc:match("(%[COST:.-)%]")
+            if costPrefix then
+                local newCopy = costPrefix .. "(type: " .. rAction.sMasteryType .. ")]";
+                rRoll.sDesc = rRoll.sDesc:gsub("%[COST: .-%]", newCopy); 
             end
         end
     end
     return rRoll;
 end
 
-function deductCostWithMastery(rSource, sCost, bSuccess)
-	if not sCost then return; end
-    -- try with mastery type
-    sCostTrigger = string.match(sCost, "%(.+, (.+)%)");
-    if not sCostTrigger then
-        -- try to match without mastery type
-	local sCostTrigger = string.match(sCost, "%((.+)%)");
+function handleCostMastery(rSource, rTarget, costOOB, sCost, bSuccess)
+	if not rSource or not sCost then return; end
+    
+    -- Handle mastery type
+    local mastery = string.match(sCost, "%(type: (.+)%)")
+    if mastery then
+        costOOB.sMastery = mastery;
     end
-	if (sCostTrigger == "S/F") or (sCostTrigger == "S" and bSuccess == true) or (sCostTrigger == "F" and bSuccess == false) then
-		local sCostDice = string.match(sCost, "(.+) %(.+%)");
-		local costOOB = {};
-		costOOB.type = OOB_MSGTYPE_ROLLCOST;
-		costOOB.nSecret = 0;
-		costOOB.sSourceNode = ActorManager.getCreatureNodeName(rSource);
-		costOOB.sCost = sCostDice;
-
-        -- Handle mastery type
-        local mastery = string.match(sCost, ".+ %((.+), .+%)")
-        if mastery then
-            costOOB.sMastery = mastery;
-        end
-
-		Comm.deliverOOBMessage(costOOB, "");
-	end
 end
 
 function handleRollCostWithMastery(msgOOB)
 	local rActor = ActorManager.resolveActor(msgOOB.sSourceNode);
+	local rTarget = ActorManager.resolveActor(msgOOB.sTargetNode);
 	local sCost = msgOOB.sCost;
 	local rCostRoll = {};
 	rCostRoll.sType = "cost";
-	rCostRoll.sDesc = ""; 
+	rCostRoll.sDesc = msgOOB.sPowerName .. " [COST: " .. sCost .. "]";
+    if msgOOB.sHealthResource then
+		rCostRoll.sDesc = rCostRoll.sDesc .. " [" .. msgOOB.sHealthrResource .. "]";
+	end
     if msgOOB.sMastery then
         local nMastery = getMasteryLevel(DB.findNode(msgOOB.sSourceNode), msgOOB.sMastery);
         if nMastery >= 4 then
@@ -90,7 +75,7 @@ function handleRollCostWithMastery(msgOOB)
         end
     end
 	rCostRoll.aDice, rCostRoll.nMod = StringManager.convertStringToDice(sCost);
-	ActionCost.performAction(rActor, rCostRoll);
+	ActionCost.performAction(rActor, rTarget, rCostRoll);
 end
 
 function onCostRoll(rSource, rTarget, rRoll)
