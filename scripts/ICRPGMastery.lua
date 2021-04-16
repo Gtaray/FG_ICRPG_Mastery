@@ -4,19 +4,70 @@
 --
 OOB_MSGTYPE_ROLLCOST = "rollcost";
 
+local fGetCostMessage;
+local fCreateCostRoll;
+local fGetCostTotal;
 local fGetPowerRoll;
 local fGetPCPowerAction;
+
 function onInit()
-    OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ROLLCOST, handleRollCostWithMastery);
-    ActionsManager.registerResultHandler("cost", onCostRoll);
+    fGetCostMessage = ActionAttempt.getCostMessage;
+    ActionAttempt.getCostMessage = getCostMessageWithMastery;
+
+    fCreateCostRoll = ActionCost.createCostRoll;
+    ActionCost.createCostRoll = createCostRollWithMastery
+    
+    fGetCostTotal = ActionCost.getCostTotal;
+    ActionCost.getCostTotal = getCostTotalWithMastery;
+
 
     fGetPCPowerAction = PowerManager.getPCPowerAction;
     PowerManager.getPCPowerAction = getPCPowerActionWithMastery;
 
     fGetPowerRoll = ActionAttempt.getPowerRoll;
     ActionAttempt.getPowerRoll = getAttemptPowerRoll;
+end
 
-    ActionAttempt.setCustomDeductCost(handleCostMastery)
+-------------------------------------
+-- HANDLE COST ROLLING / RESOLVING
+-------------------------------------
+
+function createCostRollWithMastery(msgOOB)
+    rRoll = fCreateCostRoll(msgOOB);
+    if msgOOB.sMastery then
+        local nMastery = getMasteryLevel(DB.findNode(msgOOB.sSourceNode), msgOOB.sMastery);
+        if nMastery >= 4 then
+            rRoll.sDesc = rRoll.sDesc .. " [MASTERED]";
+        end
+    end
+    return rRoll;
+end
+
+function getCostTotalWithMastery(rSource, rTarget, rRoll)
+    local nTotal = fGetCostTotal(rSource, rTarget, rRoll);
+
+    -- Handle mastery
+    local mastered = rRoll.sDesc:match("%[MASTERED%]");
+    if mastered then
+        nTotal = math.max(math.floor(nTotal/2), 1)
+    end
+
+    return nTotal;
+end
+
+-------------------------------------
+-- GET ACTION & ATTEMPT ROLLS
+-------------------------------------
+
+function getCostMessageWithMastery(rSource, rTarget, sPowerName, sCost)
+    local msg = fGetCostMessage(rSource, rTarget, sPowerName, sCost);
+    
+    local mastery = string.match(sCost, "%(type: (.+)%)")
+    if mastery then
+        msg.sMastery = mastery;
+    end
+
+    return msg;
 end
 
 function getPCPowerActionWithMastery(nodeAction)
@@ -48,59 +99,9 @@ function getAttemptPowerRoll(rActor, rAction)
     return rRoll;
 end
 
-function handleCostMastery(rSource, rTarget, costOOB, sCost, bSuccess)
-	if not rSource or not sCost then return; end
-    
-    -- Handle mastery type
-    local mastery = string.match(sCost, "%(type: (.+)%)")
-    if mastery then
-        costOOB.sMastery = mastery;
-    end
-end
-
-function handleRollCostWithMastery(msgOOB)
-	local rActor = ActorManager.resolveActor(msgOOB.sSourceNode);
-	local rTarget = ActorManager.resolveActor(msgOOB.sTargetNode);
-	local sCost = msgOOB.sCost;
-	local rCostRoll = {};
-	rCostRoll.sType = "cost";
-	rCostRoll.sDesc = msgOOB.sPowerName .. " [COST: " .. sCost .. "]";
-    if msgOOB.sHealthResource then
-		rCostRoll.sDesc = rCostRoll.sDesc .. " [" .. msgOOB.sHealthrResource .. "]";
-	end
-    if msgOOB.sMastery then
-        local nMastery = getMasteryLevel(DB.findNode(msgOOB.sSourceNode), msgOOB.sMastery);
-        if nMastery >= 4 then
-            rCostRoll.sDesc = "[MASTERED]";
-        end
-    end
-	rCostRoll.aDice, rCostRoll.nMod = StringManager.convertStringToDice(sCost);
-	ActionCost.performAction(rActor, rTarget, rCostRoll);
-end
-
-function onCostRoll(rSource, rTarget, rRoll)
-    local rMessage = ActionsManager.createActionMessage(rSource, rRoll);
-    rMessage.icon = "action_effort";
-    local nTotal = ActionsManager.total(rRoll);
-    rMessage.text = "[COST: " .. nTotal .. "] " .. rRoll.sDesc;
-    
-    local bShowMsg = true;
-	if rTarget and rTarget.nOrder and rTarget.nOrder ~= 1 then
-		bShowMsg = false;
-	end
-
-    -- Handle mastery
-    local mastered = rMessage.text:match("%[MASTERED%]");
-    if mastered then
-        nTotal = math.max(math.floor(nTotal/2), 1)
-    end
-
-	if bShowMsg then
-		Comm.deliverChatMessage(rMessage);
-	end
-
-    ActionEffort.notifyApplyDamage(rSource, rSource, bShowMsg, rMessage.text, nTotal);
-end
+------------------------------
+-- UTILITY
+------------------------------
 
 function getMasteryNode(nodeActor, sType) 
     if not nodeActor or not sType then return nil; end
